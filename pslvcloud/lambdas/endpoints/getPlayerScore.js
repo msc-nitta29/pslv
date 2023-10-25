@@ -14,5 +14,5 @@ export async function getPlayerData(event) {
     if(!user){
         return Responses._400({message: 'Failed to get user with ID'});
     }
-    return Responses._200({user});
+    return Responses._200({"status_msg":"OK",user});
 }
