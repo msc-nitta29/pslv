@@ -1,0 +1,68 @@
+org: mscnitta
+app: pslvcloud
+service: pslvcloud
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 'dynamodb:PutItem'
+            - 'dynamodb:Get*'
+            - 'dynamodb:Scan*'
+            - 'dynamodb:UpdateItem'
+            - 'dynamodb:DeleteItem'
+          Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
+  environment:
+   DYNAMODB_CUSTOMER_TABLE: tbl_customer
+plugins:
+  - serverless-webpack
+  - serverless-s3-sync
+  - serverless-offline
+custom:
+  s3Sync:
+    - bucketName: plsvserverlessbucket
+      localDir: UploadData
+package:
+    individually: true
+functions:
+  user:
+    handler: lambdas/endpoints/getUser.getUserData
+    events:
+      - httpApi:
+          path: /user/{ID}
+          method: get 
+  getPlayerScore:
+    handler: lambdas/endpoints/getPlayerScore.getPlayerData
+    events:
+      - httpApi:
+          path: /get-player-score/{ID}
+          method: get 
+  createCustomer:
+    handler: customer/createCustomer.insert
+    events:
+      - httpApi:
+          path: /insertCustomer
+          method: post       
+resources:
+  Resources:
+    CustomerTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
+        AttributeDefinitions:
+          - AttributeName: ID
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: ID
+            KeyType: HASH
+    PlsvBucketUpload:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: plsvserverlessbucket
+          
