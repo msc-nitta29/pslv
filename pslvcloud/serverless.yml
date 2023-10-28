@@ -17,6 +17,15 @@ provider:
             - 'dynamodb:UpdateItem'
             - 'dynamodb:DeleteItem'
           Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
+        - Effect: "Allow"
+          Action:
+            - "sqs:SendMessage"
+            - "sqs:GetQueueUrl"
+          Resource: "arn:aws:sqs:us-east-1:761245556758:MyQueue"
+        - Effect: "Allow"
+          Action:
+          - "sqs:ListQueues"
+          Resource: "arn:aws:sqs:us-east-1:761245556758:MyQueue:*"
   environment:
    DYNAMODB_CUSTOMER_TABLE: tbl_customer
 plugins:
@@ -47,7 +56,19 @@ functions:
     events:
       - httpApi:
           path: /insertCustomer
-          method: post       
+          method: post    
+  sender:
+    handler: lambdas/endpoints/sender.handler
+    events:
+      - httpApi:
+          path: /sender
+          method: post   
+  receiver:
+    handler: lambdas/endpoints/receiver.handler
+    events:
+      - sqs:
+          arn: "arn:aws:sqs:us-east-1:761245556758:MyQueue"
+          batchSize: 1 
 resources:
   Resources:
     CustomerTable:
@@ -65,4 +86,7 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: plsvserverlessbucket
-          
+    MyQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "MyQueue"    
