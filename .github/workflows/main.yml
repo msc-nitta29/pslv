@@ -24,7 +24,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: installing modules 
       run: npm ci
-    - run: cd pslvcloud
     - name: serverless deploy
       uses: serverless/github-action@master
       with:
