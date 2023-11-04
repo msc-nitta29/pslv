@@ -25,6 +25,7 @@ jobs:
     - name: serverless deploy
       uses: serverless/github-action@master
       with:
+        run: cd pslvcloud
         args: deploy
       env:
         # or if using AWS credentials directly
