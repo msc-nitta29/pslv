@@ -9,6 +9,9 @@ jobs:
   deploy:
     name: deploy
     runs-on: ubuntu-latest
+    defaults:
+        run:
+          working-directory: ./pslvcloud
     strategy:
       matrix:
         node-version: [16.x]
@@ -20,12 +23,10 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: installing modules 
-      working-directory: ./pslvcloud
       run: npm ci
     - name: serverless deploy
       uses: serverless/github-action@master
       with:
-        entryPoint: ./pslvcloud
         args: deploy
       env:
         # or if using AWS credentials directly
